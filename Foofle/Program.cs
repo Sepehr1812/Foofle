@@ -19,28 +19,30 @@ namespace Foofle
             Console.WriteLine("Welcome!");
             String n;
 
-            while (true)
-            {
-                Console.WriteLine("\nEnter 1 for Register or 2 for Login:");
-                n = Console.ReadLine();
+            //while (true)
+            //{
+            //    Console.WriteLine("\nEnter 1 for Register, 2 for Login or 0 to Exit:");
+            //    n = Console.ReadLine();
 
-                if (n == "1")
-                    Register();
-                else if (n == "2")
-                {
-                    Login();
+            //    if (n == "1")
+            //        Register();
+            //    else if (n == "2")
+            //    {
+            //        Login();
 
-                    if (MSG == "User logged in successfully")
-                        break;
-                }
-            }
+            //        if (MSG == "User logged in successfully")
+            //            break;
+            //    }
+            //    else if (n == "0")
+            //        Environment.Exit(0);
+            //}
 
             while (true)
             {
                 Console.WriteLine("\nEnter 1 for see notifications," +
                 " 2 for edit, 3 for block someone, 4 for send an email," +
                 " 5 for see your inbox, 6 for your outbox, 7 for see your info," +
-                " 8 for see someone's info, 9 for delete yourself.");
+                " 8 for see someone's info, 9 for delete yourself or 0 to Exit.");
                 n = Console.ReadLine();
 
                 switch (n)
@@ -59,9 +61,39 @@ namespace Foofle
                         break;
                     case "5":
                         GetEmails(0);
+
+                        Console.WriteLine("Enter R to read an email or D to delete an email. X to Exit:");
+                        n = Console.ReadLine();
+
+                        switch (n)
+                        {
+                            case "R":
+                                Read(0);
+                                break;
+                            case "D":
+                                DeleteEmail();
+                                break;
+                            default:
+                                break;
+                        }
                         break;
                     case "6":
                         GetEmails(1);
+
+                        Console.WriteLine("Enter R to read an email or D to delete an email. X to Exit:");
+                        n = Console.ReadLine();
+
+                        switch (n)
+                        {
+                            case "R":
+                                Read(1);
+                                break;
+                            case "D":
+                                DeleteEmail();
+                                break;
+                            default:
+                                break;
+                        }
                         break;
                     case "7":
                         GetYourInfo();
@@ -71,6 +103,9 @@ namespace Foofle
                         break;
                     case "9":
                         Delete();
+                        break;
+                    case "0":
+                        Environment.Exit(0);
                         break;
                     default:
                         break;
@@ -436,7 +471,7 @@ namespace Foofle
             }
 
             table.Write();
-
+            
             // read output value from @MSG
             MSG = cmd.Parameters["@MSG"].Value.ToString();
             Console.WriteLine(MSG);
@@ -539,6 +574,77 @@ namespace Foofle
 
             // Set up a command with the given query and associate this with the current connection.
             using SqlCommand cmd = new SqlCommand("DeleteUser", con) { CommandType = CommandType.StoredProcedure };
+            cmd.Parameters.Add(new SqlParameter("@MSG", SqlDbType.NVarChar, 512)).Direction = ParameterDirection.Output;
+
+            // Open connection to the database
+            con.Open();
+            cmd.ExecuteNonQuery();
+
+            // read output value from @MSG
+            MSG = cmd.Parameters["@MSG"].Value.ToString();
+            Console.WriteLine(MSG);
+
+            con.Close();
+        }
+
+        static void Read(int isSent)
+        {
+            Console.WriteLine("\nEnter Email ID:");
+            String EmailId = Console.ReadLine();
+
+            string conString = "Server=(LocalDb)\\MSSQLLocalDB;Database=Foofle;Trusted_Connection=true";
+            using SqlConnection con = new SqlConnection(conString);
+
+            // Set up a command with the given query and associate this with the current connection.
+            using SqlCommand cmd = new SqlCommand("ReadEmail", con) { CommandType = CommandType.StoredProcedure };
+            cmd.Parameters.Add(new SqlParameter("@EmailId", EmailId));
+            cmd.Parameters.Add(new SqlParameter("@IsSent", isSent));
+            cmd.Parameters.Add(new SqlParameter("@MSG", SqlDbType.NVarChar, 512)).Direction = ParameterDirection.Output;
+
+            // Open connection to the database
+            con.Open();
+
+            // create data adapter
+            SqlDataAdapter da = new SqlDataAdapter(cmd);
+            dataTable.Clear();
+            da.Fill(dataTable);
+
+            // displaying table
+            var table = new ConsoleTable("Sender", "Time", "Subject", "Text");
+            var RowArray = new ArrayList();
+            foreach (DataRow row in dataTable.Rows)
+            {
+                RowArray.Clear();
+                foreach (var item in row.ItemArray)
+                {
+                    if (item.ToString() != "")
+                        RowArray.Add(item);
+                }
+
+                table.AddRow(RowArray.ToArray());
+            }
+
+            table.Write();
+
+            // read output value from @MSG
+            MSG = cmd.Parameters["@MSG"].Value.ToString();
+            Console.WriteLine(MSG);
+
+            con.Close();
+            da.Dispose();
+        }
+
+        static void DeleteEmail()
+        {
+            Console.WriteLine("\nEnter Email ID:");
+            String EmailId = Console.ReadLine();
+
+            string conString = "Server=(LocalDb)\\MSSQLLocalDB;Database=Foofle;Trusted_Connection=true";
+            using SqlConnection con = new SqlConnection(conString);
+
+            // Set up a command with the given query and associate this with the current connection.
+            using SqlCommand cmd = new SqlCommand("DeleteEmail", con) { CommandType = CommandType.StoredProcedure };
+            cmd.Parameters.Add(new SqlParameter("@EmailId", EmailId));
             cmd.Parameters.Add(new SqlParameter("@MSG", SqlDbType.NVarChar, 512)).Direction = ParameterDirection.Output;
 
             // Open connection to the database
