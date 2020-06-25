@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Data;
 using System.Data.SqlClient;
-using System.Net.Http.Headers;
 
 namespace Foofle
 {
@@ -11,31 +10,28 @@ namespace Foofle
     {
         static String MSG = "";
 
-        // data table
-        static readonly DataTable dataTable = new DataTable();
-
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome!");
             String n;
 
-            //while (true)
-            //{
-            //    Console.WriteLine("\nEnter 1 for Register, 2 for Login or 0 to Exit:");
-            //    n = Console.ReadLine();
+            while (true)
+            {
+                Console.WriteLine("\nEnter 1 for Register, 2 for Login or 0 to Exit:");
+                n = Console.ReadLine();
 
-            //    if (n == "1")
-            //        Register();
-            //    else if (n == "2")
-            //    {
-            //        Login();
+                if (n == "1")
+                    Register();
+                else if (n == "2")
+                {
+                    Login();
 
-            //        if (MSG == "User logged in successfully")
-            //            break;
-            //    }
-            //    else if (n == "0")
-            //        Environment.Exit(0);
-            //}
+                    if (MSG == "User logged in successfully")
+                        break;
+                }
+                else if (n == "0")
+                    Environment.Exit(0);
+            }
 
             while (true)
             {
@@ -206,9 +202,9 @@ namespace Foofle
             // Open connection to the database
             con.Open();
 
-            // create data adapter
+            // create data adapter and data table
+            DataTable dataTable = new DataTable();
             SqlDataAdapter da = new SqlDataAdapter(cmd);
-            dataTable.Clear();
             da.Fill(dataTable);
 
             // displaying table
@@ -336,9 +332,9 @@ namespace Foofle
             // Open connection to the database
             con.Open();
 
-            // create data adapter
+            // create data adapter and data table
+            DataTable dataTable = new DataTable();
             SqlDataAdapter da = new SqlDataAdapter(cmd);
-            dataTable.Clear();
             da.Fill(dataTable);
 
             // displaying table
@@ -448,9 +444,9 @@ namespace Foofle
             con.Open();
             cmd.ExecuteNonQuery();
 
-            // create data adapter
+            // create data adapter and data table
+            DataTable dataTable = new DataTable();
             SqlDataAdapter da = new SqlDataAdapter(cmd);
-            dataTable.Clear();
             da.Fill(dataTable);
 
             // displaying table
@@ -471,7 +467,7 @@ namespace Foofle
             }
 
             table.Write();
-            
+
             // read output value from @MSG
             MSG = cmd.Parameters["@MSG"].Value.ToString();
             Console.WriteLine(MSG);
@@ -493,9 +489,9 @@ namespace Foofle
             // Open connection to the database
             con.Open();
 
-            // create data adapter
+            // create data adapter and data table
+            DataTable dataTable = new DataTable();
             SqlDataAdapter da = new SqlDataAdapter(cmd);
-            dataTable.Clear();
             da.Fill(dataTable);
 
             // displaying table
@@ -538,9 +534,9 @@ namespace Foofle
             // Open connection to the database
             con.Open();
 
-            // create data adapter
+            // create data adapter and data table
+            DataTable dataTable = new DataTable();
             SqlDataAdapter da = new SqlDataAdapter(cmd);
-            dataTable.Clear();
             da.Fill(dataTable);
 
             // displaying table
@@ -604,9 +600,9 @@ namespace Foofle
             // Open connection to the database
             con.Open();
 
-            // create data adapter
+            // create data adapter and data table
+            DataTable dataTable = new DataTable();
             SqlDataAdapter da = new SqlDataAdapter(cmd);
-            dataTable.Clear();
             da.Fill(dataTable);
 
             // displaying table
@@ -616,10 +612,7 @@ namespace Foofle
             {
                 RowArray.Clear();
                 foreach (var item in row.ItemArray)
-                {
-                    if (item.ToString() != "")
-                        RowArray.Add(item);
-                }
+                    RowArray.Add(item);
 
                 table.AddRow(RowArray.ToArray());
             }
