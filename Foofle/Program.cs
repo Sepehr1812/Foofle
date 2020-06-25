@@ -10,7 +10,7 @@ namespace Foofle
     class Program
     {
         static String MSG = "";
-        
+
         // data table
         static readonly DataTable dataTable = new DataTable();
 
@@ -18,7 +18,7 @@ namespace Foofle
         {
             Console.WriteLine("Welcome!");
             String n;
-            
+
             //while (true)
             //{
             //    Console.WriteLine("\nEnter 1 for Register or 2 for Login:");
@@ -47,6 +47,9 @@ namespace Foofle
                 {
                     case "1":
                         GetNotifications();
+                        break;
+                    case "2":
+                        Edit();
                         break;
                     default:
                         break;
@@ -173,6 +176,102 @@ namespace Foofle
 
             con.Close();
             da.Dispose();
+        }
+
+        static void Edit()
+        {
+            Console.WriteLine("If you don't want to edit something, just enter '~' and press enter.\n");
+            Console.WriteLine("Password:");
+            String Password = Console.ReadLine();
+            if (Password == "~") Password = null;
+            Console.WriteLine("Primary Phone:");
+            String PrimaryPhone = Console.ReadLine();
+            if (PrimaryPhone == "~") PrimaryPhone = null;
+            Console.WriteLine("First Name:");
+            String FName = Console.ReadLine();
+            if (FName == "~") FName = null;
+            Console.WriteLine("Last Name:");
+            String LName = Console.ReadLine();
+            if (LName == "~") LName = null;
+            Console.WriteLine("Phone:");
+            String Phone = Console.ReadLine();
+            if (Phone == "~") Phone = null;
+            Console.WriteLine("Birth Date in format \"YYYY-MM-DD\":");
+            String BirthDate = Console.ReadLine();
+            if (BirthDate == "~") BirthDate = null;
+            Console.WriteLine("Nickname:");
+            String Nickname = Console.ReadLine();
+            if (Nickname == "~") Nickname = null;
+            Console.WriteLine("ID Number:");
+            String IDNumber = Console.ReadLine();
+            if (IDNumber == "~") IDNumber = null;
+            Console.WriteLine("Address:");
+            String Address = Console.ReadLine();
+            if (Address == "~") Address = null;
+
+            // Set connection to the database
+            string conString = "Server=(LocalDb)\\MSSQLLocalDB;Database=Foofle;Trusted_Connection=true";
+            using SqlConnection con = new SqlConnection(conString);
+
+            // Set up a command with the given query and associate this with the current connection.
+            using SqlCommand cmd = new SqlCommand("Edit", con) { CommandType = CommandType.StoredProcedure };
+            if (Password == null)
+                cmd.Parameters.Add(new SqlParameter("@Password", DBNull.Value));
+            else
+                cmd.Parameters.Add(new SqlParameter("@Password", Password));
+
+            if (PrimaryPhone == null)
+                cmd.Parameters.Add(new SqlParameter("@PrimaryPhone", DBNull.Value));
+            else
+                cmd.Parameters.Add(new SqlParameter("@PrimaryPhone", PrimaryPhone));
+
+            if (FName == null)
+                cmd.Parameters.Add(new SqlParameter("@FirstName", DBNull.Value));
+            else
+                cmd.Parameters.Add(new SqlParameter("@FirstName", FName));
+
+            if (LName == null)
+                cmd.Parameters.Add(new SqlParameter("@LastName", DBNull.Value));
+            else
+                cmd.Parameters.Add(new SqlParameter("@LastName", LName));
+
+            if (Phone == null)
+                cmd.Parameters.Add(new SqlParameter("@Phone", DBNull.Value));
+            else
+                cmd.Parameters.Add(new SqlParameter("@Phone", Phone));
+
+            if (BirthDate == null)
+                cmd.Parameters.Add(new SqlParameter("@BirthDate", DBNull.Value));
+            else
+                cmd.Parameters.Add(new SqlParameter("@BirthDate", BirthDate));
+
+            if (Nickname == null)
+                cmd.Parameters.Add(new SqlParameter("@Nickname", DBNull.Value));
+            else
+                cmd.Parameters.Add(new SqlParameter("@Nickname", Nickname));
+
+            if (IDNumber == null)
+                cmd.Parameters.Add(new SqlParameter("@IDNumber", DBNull.Value));
+            else
+                cmd.Parameters.Add(new SqlParameter("@IDNumber", IDNumber));
+
+            if (Address == null)
+                cmd.Parameters.Add(new SqlParameter("@Address", DBNull.Value));
+            else
+                cmd.Parameters.Add(new SqlParameter("@Address", Address));
+
+            cmd.Parameters.Add(new SqlParameter("@DoNotShare", DBNull.Value));
+            cmd.Parameters.Add(new SqlParameter("@MSG", SqlDbType.NVarChar, 512)).Direction = ParameterDirection.Output;
+
+            // Open connection to the database
+            con.Open();
+            cmd.ExecuteNonQuery();
+
+            // read output value from @MSG
+            MSG = cmd.Parameters["@MSG"].Value.ToString();
+            Console.WriteLine(MSG);
+
+            con.Close();
         }
     }
 }
