@@ -51,6 +51,9 @@ namespace Foofle
                     case "2":
                         Edit();
                         break;
+                    case "3":
+                        Block();
+                        break;
                     default:
                         break;
                 }
@@ -183,31 +186,22 @@ namespace Foofle
             Console.WriteLine("If you don't want to edit something, just enter '~' and press enter.\n");
             Console.WriteLine("Password:");
             String Password = Console.ReadLine();
-            if (Password == "~") Password = null;
             Console.WriteLine("Primary Phone:");
             String PrimaryPhone = Console.ReadLine();
-            if (PrimaryPhone == "~") PrimaryPhone = null;
             Console.WriteLine("First Name:");
             String FName = Console.ReadLine();
-            if (FName == "~") FName = null;
             Console.WriteLine("Last Name:");
             String LName = Console.ReadLine();
-            if (LName == "~") LName = null;
             Console.WriteLine("Phone:");
             String Phone = Console.ReadLine();
-            if (Phone == "~") Phone = null;
             Console.WriteLine("Birth Date in format \"YYYY-MM-DD\":");
             String BirthDate = Console.ReadLine();
-            if (BirthDate == "~") BirthDate = null;
             Console.WriteLine("Nickname:");
             String Nickname = Console.ReadLine();
-            if (Nickname == "~") Nickname = null;
             Console.WriteLine("ID Number:");
             String IDNumber = Console.ReadLine();
-            if (IDNumber == "~") IDNumber = null;
             Console.WriteLine("Address:");
             String Address = Console.ReadLine();
-            if (Address == "~") Address = null;
 
             // Set connection to the database
             string conString = "Server=(LocalDb)\\MSSQLLocalDB;Database=Foofle;Trusted_Connection=true";
@@ -215,47 +209,47 @@ namespace Foofle
 
             // Set up a command with the given query and associate this with the current connection.
             using SqlCommand cmd = new SqlCommand("Edit", con) { CommandType = CommandType.StoredProcedure };
-            if (Password == null)
+            if (Password == "~")
                 cmd.Parameters.Add(new SqlParameter("@Password", DBNull.Value));
             else
                 cmd.Parameters.Add(new SqlParameter("@Password", Password));
 
-            if (PrimaryPhone == null)
+            if (PrimaryPhone == "~")
                 cmd.Parameters.Add(new SqlParameter("@PrimaryPhone", DBNull.Value));
             else
                 cmd.Parameters.Add(new SqlParameter("@PrimaryPhone", PrimaryPhone));
 
-            if (FName == null)
+            if (FName == "~")
                 cmd.Parameters.Add(new SqlParameter("@FirstName", DBNull.Value));
             else
                 cmd.Parameters.Add(new SqlParameter("@FirstName", FName));
 
-            if (LName == null)
+            if (LName == "~")
                 cmd.Parameters.Add(new SqlParameter("@LastName", DBNull.Value));
             else
                 cmd.Parameters.Add(new SqlParameter("@LastName", LName));
 
-            if (Phone == null)
+            if (Phone == "~")
                 cmd.Parameters.Add(new SqlParameter("@Phone", DBNull.Value));
             else
                 cmd.Parameters.Add(new SqlParameter("@Phone", Phone));
 
-            if (BirthDate == null)
+            if (BirthDate == "~")
                 cmd.Parameters.Add(new SqlParameter("@BirthDate", DBNull.Value));
             else
                 cmd.Parameters.Add(new SqlParameter("@BirthDate", BirthDate));
 
-            if (Nickname == null)
+            if (Nickname == "~")
                 cmd.Parameters.Add(new SqlParameter("@Nickname", DBNull.Value));
             else
                 cmd.Parameters.Add(new SqlParameter("@Nickname", Nickname));
 
-            if (IDNumber == null)
+            if (IDNumber == "~")
                 cmd.Parameters.Add(new SqlParameter("@IDNumber", DBNull.Value));
             else
                 cmd.Parameters.Add(new SqlParameter("@IDNumber", IDNumber));
 
-            if (Address == null)
+            if (Address == "~")
                 cmd.Parameters.Add(new SqlParameter("@Address", DBNull.Value));
             else
                 cmd.Parameters.Add(new SqlParameter("@Address", Address));
@@ -269,6 +263,81 @@ namespace Foofle
 
             // read output value from @MSG
             MSG = cmd.Parameters["@MSG"].Value.ToString();
+            Console.WriteLine(MSG);
+
+            con.Close();
+        }
+
+        static void Block()
+        {
+            Console.WriteLine("Type IDs you want to block. Seperate by ','." +
+                "If you don't want to block anyone, just type '~' and press enter:\n\n");
+
+            // displaying users
+            string conString = "Server=(LocalDb)\\MSSQLLocalDB;Database=Foofle;Trusted_Connection=true";
+            using SqlConnection con = new SqlConnection(conString);
+
+            // Set up a command with the given query and associate this with the current connection.
+            using SqlCommand cmd = new SqlCommand("GetUsers", con) { CommandType = CommandType.StoredProcedure };
+            cmd.Parameters.Add(new SqlParameter("@MSG", SqlDbType.NVarChar, 512)).Direction = ParameterDirection.Output;
+
+            // Open connection to the database
+            con.Open();
+
+            // create data adapter
+            SqlDataAdapter da = new SqlDataAdapter(cmd);
+            dataTable.Clear();
+            da.Fill(dataTable);
+
+            // displaying table
+            var table = new ConsoleTable("ID", "Username");
+            var RowArray = new ArrayList();
+            foreach (DataRow row in dataTable.Rows)
+            {
+                RowArray.Clear();
+                foreach (var item in row.ItemArray)
+                    RowArray.Add(item);
+
+                table.AddRow(RowArray.ToArray());
+            }
+
+            table.Write();
+
+
+            // read output value from @MSG
+            MSG = cmd.Parameters["@MSG"].Value.ToString();
+            Console.WriteLine(MSG);
+
+            con.Close();
+            da.Dispose();
+            // END of displaying
+
+            Console.WriteLine("\n\nIDs:");
+            String IDs = Console.ReadLine();
+
+            // Set up a command with the given query and associate this with the current connection.
+            using SqlCommand cmd2 = new SqlCommand("Edit", con) { CommandType = CommandType.StoredProcedure };
+            cmd2.Parameters.Add(new SqlParameter("@Password", DBNull.Value));
+            cmd2.Parameters.Add(new SqlParameter("@PrimaryPhone", DBNull.Value));
+            cmd2.Parameters.Add(new SqlParameter("@FirstName", DBNull.Value));
+            cmd2.Parameters.Add(new SqlParameter("@LastName", DBNull.Value));
+            cmd2.Parameters.Add(new SqlParameter("@Phone", DBNull.Value));
+            cmd2.Parameters.Add(new SqlParameter("@BirthDate", DBNull.Value));
+            cmd2.Parameters.Add(new SqlParameter("@Nickname", DBNull.Value));
+            cmd2.Parameters.Add(new SqlParameter("@IDNumber", DBNull.Value));
+            cmd2.Parameters.Add(new SqlParameter("@Address", DBNull.Value));
+            if (IDs == "~")
+                cmd2.Parameters.Add(new SqlParameter("@DoNotShare", DBNull.Value));
+            else
+                cmd2.Parameters.Add(new SqlParameter("@DoNotShare", IDs));
+            cmd2.Parameters.Add(new SqlParameter("@MSG", SqlDbType.NVarChar, 512)).Direction = ParameterDirection.Output;
+
+            // Open connection to the database
+            con.Open();
+            cmd2.ExecuteNonQuery();
+
+            // read output value from @MSG
+            MSG = cmd2.Parameters["@MSG"].Value.ToString();
             Console.WriteLine(MSG);
 
             con.Close();
