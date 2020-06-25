@@ -57,6 +57,12 @@ namespace Foofle
                     case "4":
                         Send();
                         break;
+                    case "5":
+                        GetEmails(0);
+                        break;
+                    case "6":
+                        GetEmails(1);
+                        break;
                     default:
                         break;
                 }
@@ -352,9 +358,9 @@ namespace Foofle
             String Receivers = Console.ReadLine();
             Console.WriteLine("Enter CC Recivers (seperate by ','):");
             String CCReceivers = Console.ReadLine();
-            Console.WriteLine("Subject");
+            Console.WriteLine("Subject:");
             String Subject = Console.ReadLine();
-            Console.WriteLine("Text");
+            Console.WriteLine("Text:");
             String Text = Console.ReadLine();
 
             // Set connection to the database
@@ -378,6 +384,57 @@ namespace Foofle
             Console.WriteLine(MSG);
 
             con.Close();
+        }
+
+        static void GetEmails(int isSent)
+        {
+            Console.WriteLine("Enter Page Number:");
+            String PageNo = Console.ReadLine();
+
+            // Set connection to the database
+            string conString = "Server=(LocalDb)\\MSSQLLocalDB;Database=Foofle;Trusted_Connection=true";
+            using SqlConnection con = new SqlConnection(conString);
+
+            // Set up a command with the given query and associate this with the current connection.
+            using SqlCommand cmd = new SqlCommand("GetEmails", con) { CommandType = CommandType.StoredProcedure };
+            cmd.Parameters.Add(new SqlParameter("@IsSent", isSent));
+            cmd.Parameters.Add(new SqlParameter("@PageNumber", PageNo));
+            cmd.Parameters.Add(new SqlParameter("@MSG", SqlDbType.NVarChar, 512)).Direction = ParameterDirection.Output;
+
+            // Open connection to the database
+            con.Open();
+            cmd.ExecuteNonQuery();
+
+            // create data adapter
+            SqlDataAdapter da = new SqlDataAdapter(cmd);
+            dataTable.Clear();
+            da.Fill(dataTable);
+
+            // displaying table
+            ConsoleTable table;
+            if (isSent == 0)
+                table = new ConsoleTable("Id", "Subject", "Time", "Is Read");
+            else
+                table = new ConsoleTable("Id", "Subject", "Time");
+
+            var RowArray = new ArrayList();
+            foreach (DataRow row in dataTable.Rows)
+            {
+                RowArray.Clear();
+                foreach (var item in row.ItemArray)
+                    RowArray.Add(item);
+
+                table.AddRow(RowArray.ToArray());
+            }
+
+            table.Write();
+
+            // read output value from @MSG
+            MSG = cmd.Parameters["@MSG"].Value.ToString();
+            Console.WriteLine(MSG);
+
+            con.Close();
+            da.Dispose();
         }
     }
 }
