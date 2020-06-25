@@ -19,21 +19,21 @@ namespace Foofle
             Console.WriteLine("Welcome!");
             String n;
 
-            //while (true)
-            //{
-            //    Console.WriteLine("\nEnter 1 for Register or 2 for Login:");
-            //    n = Console.ReadLine();
+            while (true)
+            {
+                Console.WriteLine("\nEnter 1 for Register or 2 for Login:");
+                n = Console.ReadLine();
 
-            //    if (n == "1")
-            //        Register();
-            //    else if (n == "2")
-            //    {
-            //        Login();
+                if (n == "1")
+                    Register();
+                else if (n == "2")
+                {
+                    Login();
 
-            //        if (MSG == "User logged in successfully")
-            //            break;
-            //    }
-            //}
+                    if (MSG == "User logged in successfully")
+                        break;
+                }
+            }
 
             while (true)
             {
@@ -68,6 +68,9 @@ namespace Foofle
                         break;
                     case "8":
                         GetInfo();
+                        break;
+                    case "9":
+                        Delete();
                         break;
                     default:
                         break;
@@ -186,7 +189,6 @@ namespace Foofle
             }
 
             table.Write();
-
 
             // read output value from @MSG
             MSG = cmd.Parameters["@MSG"].Value.ToString();
@@ -528,6 +530,26 @@ namespace Foofle
 
             con.Close();
             da.Dispose();
+        }
+
+        static void Delete()
+        {
+            string conString = "Server=(LocalDb)\\MSSQLLocalDB;Database=Foofle;Trusted_Connection=true";
+            using SqlConnection con = new SqlConnection(conString);
+
+            // Set up a command with the given query and associate this with the current connection.
+            using SqlCommand cmd = new SqlCommand("DeleteUser", con) { CommandType = CommandType.StoredProcedure };
+            cmd.Parameters.Add(new SqlParameter("@MSG", SqlDbType.NVarChar, 512)).Direction = ParameterDirection.Output;
+
+            // Open connection to the database
+            con.Open();
+            cmd.ExecuteNonQuery();
+
+            // read output value from @MSG
+            MSG = cmd.Parameters["@MSG"].Value.ToString();
+            Console.WriteLine(MSG);
+
+            con.Close();
         }
     }
 }
