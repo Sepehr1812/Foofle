@@ -63,6 +63,12 @@ namespace Foofle
                     case "6":
                         GetEmails(1);
                         break;
+                    case "7":
+                        GetYourInfo();
+                        break;
+                    case "8":
+                        GetInfo();
+                        break;
                     default:
                         break;
                 }
@@ -72,25 +78,25 @@ namespace Foofle
 
         static void Register()
         {
-            Console.WriteLine("Enter Username:");
+            Console.WriteLine("\nEnter Username:");
             String Username = Console.ReadLine();
-            Console.WriteLine("Password:");
+            Console.WriteLine("\nPassword:");
             String Password = Console.ReadLine();
-            Console.WriteLine("Primary Phone:");
+            Console.WriteLine("\nPrimary Phone:");
             String PrimaryPhone = Console.ReadLine();
-            Console.WriteLine("First Name:");
+            Console.WriteLine("\nFirst Name:");
             String FName = Console.ReadLine();
-            Console.WriteLine("Last Name:");
+            Console.WriteLine("\nLast Name:");
             String LName = Console.ReadLine();
-            Console.WriteLine("Phone:");
+            Console.WriteLine("\nPhone:");
             String Phone = Console.ReadLine();
-            Console.WriteLine("Birth Date in format \"YYYY-MM-DD\":");
+            Console.WriteLine("\nBirth Date in format \"YYYY-MM-DD\":");
             String BirthDate = Console.ReadLine();
-            Console.WriteLine("Nickname:");
+            Console.WriteLine("\nNickname:");
             String Nickname = Console.ReadLine();
-            Console.WriteLine("ID Number:");
+            Console.WriteLine("\nID Number:");
             String IDNumber = Console.ReadLine();
-            Console.WriteLine("Address:");
+            Console.WriteLine("\nAddress:");
             String Address = Console.ReadLine();
 
             // Set connection to the database
@@ -124,9 +130,9 @@ namespace Foofle
 
         static void Login()
         {
-            Console.WriteLine("Enter Username:");
+            Console.WriteLine("\nEnter Username:");
             String Username = Console.ReadLine();
-            Console.WriteLine("Password:");
+            Console.WriteLine("\nPassword:");
             String Password = Console.ReadLine();
 
             // Set connection to the database
@@ -193,23 +199,23 @@ namespace Foofle
         static void Edit()
         {
             Console.WriteLine("If you don't want to edit something, just enter '~' and press enter.\n");
-            Console.WriteLine("Password:");
+            Console.WriteLine("\nPassword:");
             String Password = Console.ReadLine();
-            Console.WriteLine("Primary Phone:");
+            Console.WriteLine("\nPrimary Phone:");
             String PrimaryPhone = Console.ReadLine();
-            Console.WriteLine("First Name:");
+            Console.WriteLine("\nFirst Name:");
             String FName = Console.ReadLine();
-            Console.WriteLine("Last Name:");
+            Console.WriteLine("\nLast Name:");
             String LName = Console.ReadLine();
-            Console.WriteLine("Phone:");
+            Console.WriteLine("\nPhone:");
             String Phone = Console.ReadLine();
-            Console.WriteLine("Birth Date in format \"YYYY-MM-DD\":");
+            Console.WriteLine("\nBirth Date in format \"YYYY-MM-DD\":");
             String BirthDate = Console.ReadLine();
-            Console.WriteLine("Nickname:");
+            Console.WriteLine("\nNickname:");
             String Nickname = Console.ReadLine();
-            Console.WriteLine("ID Number:");
+            Console.WriteLine("\nID Number:");
             String IDNumber = Console.ReadLine();
-            Console.WriteLine("Address:");
+            Console.WriteLine("\nAddress:");
             String Address = Console.ReadLine();
 
             // Set connection to the database
@@ -354,13 +360,13 @@ namespace Foofle
 
         static void Send()
         {
-            Console.WriteLine("Enter Recivers (seperate by ','):");
+            Console.WriteLine("\nEnter Recivers (seperate by ','):");
             String Receivers = Console.ReadLine();
-            Console.WriteLine("Enter CC Recivers (seperate by ','):");
+            Console.WriteLine("\nEnter CC Recivers (seperate by ','):");
             String CCReceivers = Console.ReadLine();
-            Console.WriteLine("Subject:");
+            Console.WriteLine("\nSubject:");
             String Subject = Console.ReadLine();
-            Console.WriteLine("Text:");
+            Console.WriteLine("\nText:");
             String Text = Console.ReadLine();
 
             // Set connection to the database
@@ -388,7 +394,7 @@ namespace Foofle
 
         static void GetEmails(int isSent)
         {
-            Console.WriteLine("Enter Page Number:");
+            Console.WriteLine("\nEnter Page Number:");
             String PageNo = Console.ReadLine();
 
             // Set connection to the database
@@ -428,6 +434,93 @@ namespace Foofle
             }
 
             table.Write();
+
+            // read output value from @MSG
+            MSG = cmd.Parameters["@MSG"].Value.ToString();
+            Console.WriteLine(MSG);
+
+            con.Close();
+            da.Dispose();
+        }
+
+        static void GetYourInfo()
+        {
+            string conString = "Server=(LocalDb)\\MSSQLLocalDB;Database=Foofle;Trusted_Connection=true";
+            using SqlConnection con = new SqlConnection(conString);
+
+            // Set up a command with the given query and associate this with the current connection.
+            using SqlCommand cmd = new SqlCommand("GetInfo", con) { CommandType = CommandType.StoredProcedure };
+            cmd.Parameters.Add(new SqlParameter("Username", DBNull.Value));
+            cmd.Parameters.Add(new SqlParameter("@MSG", SqlDbType.NVarChar, 512)).Direction = ParameterDirection.Output;
+
+            // Open connection to the database
+            con.Open();
+
+            // create data adapter
+            SqlDataAdapter da = new SqlDataAdapter(cmd);
+            dataTable.Clear();
+            da.Fill(dataTable);
+
+            // displaying table
+            var table = new ConsoleTable("Username", "Join Date", "Primary Phone", "First Name", "Last Name",
+                "Phone", "Birth Date", "Nickname", "ID Number", "Address", "Blocked Account IDs");
+            var RowArray = new ArrayList();
+            foreach (DataRow row in dataTable.Rows)
+            {
+                RowArray.Clear();
+                foreach (var item in row.ItemArray)
+                    RowArray.Add(item);
+
+                table.AddRow(RowArray.ToArray());
+            }
+
+            table.Write();
+
+
+            // read output value from @MSG
+            MSG = cmd.Parameters["@MSG"].Value.ToString();
+            Console.WriteLine(MSG);
+
+            con.Close();
+            da.Dispose();
+        }
+
+        static void GetInfo()
+        {
+            Console.WriteLine("\nEnter Username:");
+            String Username = Console.ReadLine();
+
+            string conString = "Server=(LocalDb)\\MSSQLLocalDB;Database=Foofle;Trusted_Connection=true";
+            using SqlConnection con = new SqlConnection(conString);
+
+            // Set up a command with the given query and associate this with the current connection.
+            using SqlCommand cmd = new SqlCommand("GetInfo", con) { CommandType = CommandType.StoredProcedure };
+            cmd.Parameters.Add(new SqlParameter("Username", Username));
+            cmd.Parameters.Add(new SqlParameter("@MSG", SqlDbType.NVarChar, 512)).Direction = ParameterDirection.Output;
+
+            // Open connection to the database
+            con.Open();
+
+            // create data adapter
+            SqlDataAdapter da = new SqlDataAdapter(cmd);
+            dataTable.Clear();
+            da.Fill(dataTable);
+
+            // displaying table
+            var table = new ConsoleTable("First Name", "Last Name",
+                "Phone", "Birth Date", "Nickname", "ID Number", "Address");
+            var RowArray = new ArrayList();
+            foreach (DataRow row in dataTable.Rows)
+            {
+                RowArray.Clear();
+                foreach (var item in row.ItemArray)
+                    RowArray.Add(item);
+
+                table.AddRow(RowArray.ToArray());
+            }
+
+            table.Write();
+
 
             // read output value from @MSG
             MSG = cmd.Parameters["@MSG"].Value.ToString();
